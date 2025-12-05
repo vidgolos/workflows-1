@@ -3,7 +3,7 @@ name: my workflow 2
 apiVersion: automation.cloudbees.io/v1alpha1
 
 on:
-  workflow_dispatch
+  workflow_dispatch: null
 
 jobs:
   hello:
