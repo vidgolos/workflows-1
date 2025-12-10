@@ -1,12 +1,40 @@
 kind: workflow
-name: my workflow 2
+name: my workflow
 apiVersion: automation.cloudbees.io/v1alpha1
 
 on:
-  workflow_dispatch: null
+  workflow_dispatch:
 
 jobs:
-  hello:
+  job-simple:
     steps:
       - uses: docker://alpine:3.20
         run: echo "hello world"
+
+  job-service:
+    services:                         
+      postgres:                       
+        image: postgres:17-alpine3.20 
+        env:                          
+          POSTGRES_USER: testuser     
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+    steps:
+      - name: Run tests against postgres db
+        uses: docker://postgres:17
+        env:
+          DATABASE_URL: postgres://testuser:testpassword@localhost:5432/testdb  
+        run: |
+          psql -h localhost -U testuser -d testdb -c "SELECT 'Hello, PostgreSQL!' AS greeting;"
+
+  job-evidence:
+    steps:
+      - uses: docker://alpine:3.20
+        run: echo "hello world"
+      - name: Publish workflow evidence item
+        uses: https://github.com/cloudbees-io/publish-evidence-item@v1
+        with:
+          content: |-
+            ## example output
+            - Run ID: ${{ cloudbees.run_id }}
+            - [backend.tar](https://ourcompany.com/repo/backend.tar)
